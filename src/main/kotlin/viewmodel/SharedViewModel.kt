@@ -1,11 +1,15 @@
 package viewmodel
 
+import androidx.compose.foundation.Image
 import androidx.lifecycle.ViewModel
 import com.ashampoo.kim.Kim
 import com.ashampoo.kim.common.convertToPhotoMetadata
 import extension.isImageFile
+import image.CameraBodyInfo
 import image.ImageGPSInfo
 import image.ImageMeta
+import image.ImageSizeInfo
+import image.LensInfo
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -25,6 +29,14 @@ class SharedViewModel() : KoinComponent, ViewModel() {
 
     init {
         readImages()
+    }
+
+    fun refreshImages() {
+        viewModelScope.launch {
+            delay(1000)
+            _imageMetaList.emit(emptyList())
+            readImages()
+        }
     }
 
     @OptIn(DelicateCoroutinesApi::class)
@@ -63,6 +75,19 @@ class SharedViewModel() : KoinComponent, ViewModel() {
                                 latitude = photoMetadata.gpsCoordinates?.latitude,
                                 longitude = photoMetadata.gpsCoordinates?.longitude
                             ),
+                            imageSizeInfo = ImageSizeInfo(
+                                widthInPx = photoMetadata.widthPx,
+                                heightInPx = photoMetadata.heightPx,
+                            ),
+                            cameraBodyInfo = CameraBodyInfo(
+                                cameraMake = photoMetadata.cameraMake,
+                                cameraModel = photoMetadata.cameraModel,
+                            ),
+                            lensInfo = LensInfo(
+                                name = photoMetadata.lensName ?: "",
+                                lensMake = photoMetadata.lensMake,
+                                lensModel = photoMetadata.lensModel,
+                            )
                         )
 
                     } else {

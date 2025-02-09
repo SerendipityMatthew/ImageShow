@@ -1,13 +1,8 @@
 import androidx.compose.desktop.ui.tooling.preview.Preview
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.layout.wrapContentSize
-import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material.Button
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
@@ -16,15 +11,16 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.util.fastForEach
-import androidx.compose.ui.util.fastForEachIndexed
 import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.application
 import androidx.compose.ui.zIndex
 import androidx.lifecycle.viewmodel.compose.viewModel
 import coil3.compose.AsyncImage
+import compose.basecomponent.*
 import kotlinx.coroutines.DelicateCoroutinesApi
 import org.koin.core.KoinApplication
 import viewmodel.SharedViewModel
@@ -37,39 +33,61 @@ fun App() {
     val imageList by sharedViewModel.imageList.collectAsState()
 
     MaterialTheme {
-        Column(modifier = Modifier.fillMaxSize()) {
-            Button(onClick = {}) {
-                Text(text = "Hello World")
+        LazyColumn(
+            modifier = Modifier.fillMaxSize(),
+            contentPadding = PaddingValues16,
+        ) {
+            item {
+                Button(onClick = {
+                    sharedViewModel.refreshImages()
+                }) {
+                    Text(text = "Hello World")
+                }
             }
-            imageList.fastForEachIndexed { index, image ->
+            itemsIndexed(imageList) { index, image ->
                 Box(
-                    modifier = Modifier.width(600.dp).height(800.dp)
+                    modifier = Modifier
+                        .padding(TopPaddingValues16)
+                        .wrapContentSize()
+                        .clip(AllRoundedCornerShape16)
                 ) {
                     Column(
                         modifier = Modifier
-                            .padding(top = 8.dp, end = 8.dp)
+                            .padding(TopEndPaddingValues8)
+                            .width(300.dp)
+                            .height(160.dp)
                             .zIndex(1.0f)
                             .align(Alignment.TopEnd)
-                            .background(color = Color.White.copy(alpha = 0.1f), shape = RoundedCornerShape(8.dp))
-                            .padding(8.dp)
+                            .background(color = Color.White.copy(alpha = 0.2f), shape = AllRoundedCornerShape8)
+                            .padding(PaddingValues8)
                     ) {
-                        Text("经纬度信息")
-                        Text(text = "Latitude = ${image.imageGPSInfo?.latitude}")
-                        Text(text = "longitude = ${image.imageGPSInfo?.longitude}")
+                        LazyColumn {
+                            item {
+                                Text("经纬度信息")
+                                Text(text = "latitude = ${image.imageGPSInfo?.latitude}")
+                                Text(text = "longitude = ${image.imageGPSInfo?.longitude}")
+                                Text("Camera 信息")
+                                Text(text = "cameraMake = ${image.cameraBodyInfo?.cameraMake}")
+                                Text(text = "cameraModel = ${image.cameraBodyInfo?.cameraModel}")
+                                Text("Lens 信息")
+                                Text(text = "lensName = ${image.lensInfo?.name}")
+                                Text(text = "lensMake = ${image.lensInfo?.lensMake}")
+                                Text(text = "lensModel = ${image.lensInfo?.lensModel}")
+                            }
+                        }
                     }
                     AsyncImage(
                         model = image.filePath,
-                        modifier = Modifier.fillMaxSize().background(
-                            color = if (index == 0) {
-                                Color.Blue
-                            } else {
-                                Color.Yellow
-                            }
-                        ).zIndex(0.5f),
+                        modifier = Modifier.width(800.dp)
+                            .height(600.dp)
+                            .clip(AllRoundedCornerShape8)
+                            .zIndex(0.5f),
+                        contentScale = ContentScale.FillBounds,
                         contentDescription = null,
                     )
                 }
             }
+
 
         }
     }
@@ -77,7 +95,7 @@ fun App() {
 
 fun main() = application {
     KoinApplication.init().modules(allModules)
-    Window(onCloseRequest = ::exitApplication) {
+    Window(title = "ImageShow", onCloseRequest = ::exitApplication) {
         App()
     }
 }
