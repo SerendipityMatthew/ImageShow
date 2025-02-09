@@ -44,6 +44,10 @@ fun App() {
             .padding(TopPaddingValues16)
             .wrapContentSize()
             .clip(AllRoundedCornerShape16)
+        val asyncImageModifier = Modifier.width(800.dp)
+            .height(600.dp)
+            .clip(AllRoundedCornerShape8)
+            .zIndex(0.5f)
         LazyColumn(
             modifier = Modifier.fillMaxSize(),
             contentPadding = PaddingValues16,
@@ -80,10 +84,7 @@ fun App() {
                     }
                     AsyncImage(
                         model = image.filePath,
-                        modifier = Modifier.width(800.dp)
-                            .height(600.dp)
-                            .clip(AllRoundedCornerShape8)
-                            .zIndex(0.5f),
+                        modifier = asyncImageModifier,
                         contentScale = ContentScale.FillBounds,
                         contentDescription = null,
                     )
