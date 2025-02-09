@@ -33,6 +33,17 @@ fun App() {
     val imageList by sharedViewModel.imageList.collectAsState()
 
     MaterialTheme {
+        val imageInfoModifier = Modifier
+            .padding(TopEndPaddingValues8)
+            .width(300.dp)
+            .height(160.dp)
+            .zIndex(1.0f)
+            .background(color = Color.White.copy(alpha = 0.2f), shape = AllRoundedCornerShape8)
+            .padding(PaddingValues8)
+        val imageItemModifier = Modifier
+            .padding(TopPaddingValues16)
+            .wrapContentSize()
+            .clip(AllRoundedCornerShape16)
         LazyColumn(
             modifier = Modifier.fillMaxSize(),
             contentPadding = PaddingValues16,
@@ -46,20 +57,11 @@ fun App() {
             }
             itemsIndexed(imageList) { index, image ->
                 Box(
-                    modifier = Modifier
-                        .padding(TopPaddingValues16)
-                        .wrapContentSize()
-                        .clip(AllRoundedCornerShape16)
+                    modifier = imageItemModifier
                 ) {
                     Column(
-                        modifier = Modifier
-                            .padding(TopEndPaddingValues8)
-                            .width(300.dp)
-                            .height(160.dp)
-                            .zIndex(1.0f)
+                        modifier = imageInfoModifier
                             .align(Alignment.TopEnd)
-                            .background(color = Color.White.copy(alpha = 0.2f), shape = AllRoundedCornerShape8)
-                            .padding(PaddingValues8)
                     ) {
                         LazyColumn {
                             item {
