@@ -1,6 +1,12 @@
 import androidx.compose.desktop.ui.tooling.preview.Preview
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material.Button
@@ -9,6 +15,7 @@ import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -20,17 +27,34 @@ import androidx.compose.ui.window.application
 import androidx.compose.ui.zIndex
 import androidx.lifecycle.viewmodel.compose.viewModel
 import coil3.compose.AsyncImage
-import compose.basecomponent.*
+import compose.basecomponent.AllRoundedCornerShape16
+import compose.basecomponent.AllRoundedCornerShape8
+import compose.basecomponent.PaddingValues16
+import compose.basecomponent.PaddingValues8
+import compose.basecomponent.TopEndPaddingValues8
+import compose.basecomponent.TopPaddingValues16
+import dev.chrisbanes.haze.HazeDefaults
+import dev.chrisbanes.haze.HazeState
+import dev.chrisbanes.haze.HazeStyle
+import dev.chrisbanes.haze.HazeTint
+import dev.chrisbanes.haze.hazeEffect
 import kotlinx.coroutines.DelicateCoroutinesApi
 import org.koin.core.KoinApplication
 import viewmodel.SharedViewModel
 
-@OptIn(DelicateCoroutinesApi::class)
 @Composable
 @Preview
 fun App() {
     val sharedViewModel: SharedViewModel = viewModel<SharedViewModel>()
     val imageList by sharedViewModel.imageList.collectAsState()
+    val hazeState = remember { HazeState() }
+
+    val cardStyle = HazeStyle(
+        backgroundColor = Color.Black,
+        tints = listOf(HazeTint(Color.Yellow.copy(alpha = 0.4f))),
+        blurRadius = 8.dp,
+        noiseFactor = HazeDefaults.noiseFactor,
+    )
 
     MaterialTheme {
         val imageInfoModifier = Modifier
@@ -38,8 +62,9 @@ fun App() {
             .width(300.dp)
             .height(160.dp)
             .zIndex(1.0f)
-            .background(color = Color.White.copy(alpha = 0.2f), shape = AllRoundedCornerShape8)
+            .background(color = Color.White.copy(alpha = 0.45f), shape = AllRoundedCornerShape8)
             .padding(PaddingValues8)
+            .hazeEffect(state = hazeState, style = cardStyle)
         val imageItemModifier = Modifier
             .padding(TopPaddingValues16)
             .wrapContentSize()
@@ -48,10 +73,14 @@ fun App() {
             .height(600.dp)
             .clip(AllRoundedCornerShape8)
             .zIndex(0.5f)
+
         LazyColumn(
             modifier = Modifier.fillMaxSize(),
             contentPadding = PaddingValues16,
         ) {
+            item {
+
+            }
             item {
                 Button(onClick = {
                     sharedViewModel.refreshImages()
@@ -63,23 +92,42 @@ fun App() {
                 Box(
                     modifier = imageItemModifier
                 ) {
-                    Column(
-                        modifier = imageInfoModifier
+                    Box(
+                        imageInfoModifier
                             .align(Alignment.TopEnd)
+                            .hazeEffect(state = hazeState, style = cardStyle)
                     ) {
-                        LazyColumn {
-                            item {
-                                Text("经纬度信息")
-                                Text(text = "latitude = ${image.imageGPSInfo?.latitude}")
-                                Text(text = "longitude = ${image.imageGPSInfo?.longitude}")
-                                Text("Camera 信息")
-                                Text(text = "cameraMake = ${image.cameraBodyInfo?.cameraMake}")
-                                Text(text = "cameraModel = ${image.cameraBodyInfo?.cameraModel}")
-                                Text("Lens 信息")
-                                Text(text = "lensName = ${image.lensInfo?.name}")
-                                Text(text = "lensMake = ${image.lensInfo?.lensMake}")
-                                Text(text = "lensModel = ${image.lensInfo?.lensModel}")
+                        Column(
+                            modifier = Modifier
+                        ) {
+
+                            LazyColumn(
+                                modifier = Modifier
+                            ) {
+                                item {
+                                    Text("经纬度信息")
+                                    Text(text = "latitude = ${image.imageGPSInfo?.latitude}")
+                                    Text(text = "longitude = ${image.imageGPSInfo?.longitude}")
+                                    Button(
+                                        onClick = {
+                                            if (image.imageGPSInfo != null) {
+                                                val googleMapUrl =
+                                                    "https://www.google.com/maps/@${image.imageGPSInfo.latitude},${image.imageGPSInfo.longitude},14z"
+                                                println("googleMapUrl googleMapUrl = $googleMapUrl ")
+                                            }
+                                        }) {
+                                        Text(text = "Show GPS in Google Maps")
+                                    }
+                                    Text("Camera 信息")
+                                    Text(text = "cameraMake = ${image.cameraBodyInfo?.cameraMake}")
+                                    Text(text = "cameraModel = ${image.cameraBodyInfo?.cameraModel}")
+                                    Text("Lens 信息")
+                                    Text(text = "lensName = ${image.lensInfo?.name}")
+                                    Text(text = "lensMake = ${image.lensInfo?.lensMake}")
+                                    Text(text = "lensModel = ${image.lensInfo?.lensModel}")
+                                }
                             }
+
                         }
                     }
                     AsyncImage(
@@ -96,6 +144,7 @@ fun App() {
     }
 }
 
+@OptIn(DelicateCoroutinesApi::class)
 fun main() = application {
     KoinApplication.init().modules(allModules)
     Window(title = "ImageShow", onCloseRequest = ::exitApplication) {

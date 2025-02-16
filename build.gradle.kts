@@ -1,4 +1,6 @@
 import org.jetbrains.compose.desktop.application.dsl.TargetFormat
+import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 plugins {
     kotlin("jvm")
@@ -13,9 +15,16 @@ repositories {
     mavenCentral()
     maven("https://maven.pkg.jetbrains.space/public/p/compose/dev")
     google()
-    maven ("https://jitpack.io" )
+    maven("https://jitpack.io")
+    maven("https://jogamp.org/deployment/maven")
 
 }
+kotlin {
+    jvmToolchain {
+        languageVersion.set(JavaLanguageVersion.of(17))
+    }
+}
+
 
 dependencies {
     // Note, if you develop a library, you should use compose.desktop.common.
@@ -32,6 +41,10 @@ dependencies {
     implementation("io.insert-koin:koin-core-coroutines:4.0.2")
     implementation("io.insert-koin:koin-compose-viewmodel:4.0.2")
     implementation("com.ashampoo:kim:0.22.2")
+    implementation("ovh.plrapps:mapcompose-mp:0.9.4")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.8.0")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-swing:1.8.0")
+    implementation("dev.chrisbanes.haze:haze:1.3.1")
 
 }
 

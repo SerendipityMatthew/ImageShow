@@ -1,6 +1,5 @@
 package viewmodel
 
-import androidx.compose.foundation.Image
 import androidx.lifecycle.ViewModel
 import com.ashampoo.kim.Kim
 import com.ashampoo.kim.common.convertToPhotoMetadata
