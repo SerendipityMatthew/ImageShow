@@ -13,8 +13,12 @@ import androidx.compose.material.Button
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -27,6 +31,8 @@ import androidx.compose.ui.window.application
 import androidx.compose.ui.zIndex
 import androidx.lifecycle.viewmodel.compose.viewModel
 import coil3.compose.AsyncImage
+import com.multiplatform.webview.web.WebView
+import com.multiplatform.webview.web.rememberWebViewState
 import compose.basecomponent.AllRoundedCornerShape16
 import compose.basecomponent.AllRoundedCornerShape8
 import compose.basecomponent.PaddingValues16
@@ -38,13 +44,16 @@ import dev.chrisbanes.haze.HazeState
 import dev.chrisbanes.haze.HazeStyle
 import dev.chrisbanes.haze.HazeTint
 import dev.chrisbanes.haze.hazeEffect
-import kotlinx.coroutines.DelicateCoroutinesApi
+import dev.datlag.kcef.KCEF
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import org.koin.core.KoinApplication
 import viewmodel.SharedViewModel
+import java.io.File
 
 @Composable
 @Preview
-fun App() {
+fun App(isShowWebview: MutableState<Boolean>) {
     val sharedViewModel: SharedViewModel = viewModel<SharedViewModel>()
     val imageList by sharedViewModel.imageList.collectAsState()
     val hazeState = remember { HazeState() }
@@ -55,6 +64,9 @@ fun App() {
         blurRadius = 8.dp,
         noiseFactor = HazeDefaults.noiseFactor,
     )
+    val longitude = 35.8195489
+    val latitude = 139.6744804
+    val googleMapUrl = "https://www.google.com/maps/@$longitude,$latitude,14z"
 
     MaterialTheme {
         val imageInfoModifier = Modifier
@@ -79,6 +91,15 @@ fun App() {
             contentPadding = PaddingValues16,
         ) {
             item {
+                val state = rememberWebViewState(url = googleMapUrl)
+                if (isShowWebview.value){
+                    WebView(
+                        state = state,
+                        modifier =
+                        Modifier
+                            .width(800.dp).height(600.dp),
+                    )
+                }
 
             }
             item {
@@ -144,11 +165,44 @@ fun App() {
     }
 }
 
-@OptIn(DelicateCoroutinesApi::class)
 fun main() = application {
+    val isShowWebview = remember { mutableStateOf(false) }
     KoinApplication.init().modules(allModules)
+    LaunchedEffect(Unit) {
+        withContext(Dispatchers.IO) {
+            KCEF.init(builder = {
+                installDir(File("kcef-bundle"))
+                progress {
+                    onDownloading {
+                    }
+                    onInitialized {
+                        isShowWebview.value = true
+                    }
+                }
+                download {
+                    github {
+                        release("jbr-release-17.0.12b1207.37")
+                    }
+                }
+
+                settings {
+                    cachePath = File("cache").absolutePath
+                }
+            }, onError = {
+                it?.printStackTrace()
+            }, onRestartRequired = {
+            })
+        }
+    }
     Window(title = "ImageShow", onCloseRequest = ::exitApplication) {
-        App()
+        App(isShowWebview)
+    }
+
+
+    DisposableEffect(Unit) {
+        onDispose {
+            KCEF.disposeBlocking()
+        }
     }
 }
 

@@ -45,6 +45,10 @@ dependencies {
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.8.0")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-swing:1.8.0")
     implementation("dev.chrisbanes.haze:haze:1.3.1")
+    implementation("dev.datlag:kcef:2024.04.20.4")
+    api("io.github.kevinnzou:compose-webview-multiplatform:1.8.4")
+
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-swing:1.8.0")
 
 }
 
@@ -56,6 +60,20 @@ compose.desktop {
             targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb)
             packageName = "ImageShow"
             packageVersion = "1.0.0"
+        }
+    }
+}
+
+
+afterEvaluate {
+    tasks.withType<JavaExec> {
+        jvmArgs("--add-opens", "java.desktop/sun.awt=ALL-UNNAMED")
+        jvmArgs("--add-opens", "java.desktop/java.awt.peer=ALL-UNNAMED")
+
+        if (System.getProperty("os.name").contains("Mac")) {
+            jvmArgs("--add-opens", "java.desktop/sun.awt=ALL-UNNAMED")
+            jvmArgs("--add-opens", "java.desktop/sun.lwawt=ALL-UNNAMED")
+            jvmArgs("--add-opens", "java.desktop/sun.lwawt.macosx=ALL-UNNAMED")
         }
     }
 }
