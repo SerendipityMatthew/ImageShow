@@ -68,9 +68,6 @@ fun App(isShowWebview: MutableState<Boolean>) {
         blurRadius = 8.dp,
         noiseFactor = HazeDefaults.noiseFactor,
     )
-    val latitude = 35.8155031
-    val longitude = 139.7097407
-    val googleMapUrl = "https://www.google.com/maps/@$longitude,$latitude,14z"
 
     val htmlPath = File("src/main/resources/index.html").toURI().toString()
     val state = rememberWebViewState(url = htmlPath)
@@ -106,22 +103,31 @@ fun App(isShowWebview: MutableState<Boolean>) {
                         state = state,
                         modifier =
                         Modifier
-                            .width(800.dp).height(600.dp),
+                            .width(800.dp)
+                            .height(600.dp),
                         navigator = webViewNavigator,
                         onCreated = {
+                            println("imageMeta.thumbnailImageInfo?.thumbnailBase64 imageList.size = ${imageList.size}")
 
                             coroutineScope.launch {
                                 delay(5000)
-                                webViewNavigator.evaluateJavaScript(
-                                    script = "addMarker($latitude,$longitude, 'New York');",
-                                    callback = { state ->
-                                        println("WebView WebView WebView state $state")
-                                    })
+
+                                imageList.take(1).forEachIndexed { _, imageMeta ->
+                                    if (imageMeta.imageGPSInfo?.latitude == null || imageMeta.imageGPSInfo.longitude == null) {
+                                        return@forEachIndexed
+                                    }
+                                    webViewNavigator.evaluateJavaScript(
+                                        script = "addMarker(${imageMeta.imageGPSInfo.latitude},${imageMeta.imageGPSInfo.longitude}, '湯沢岩石原スキー', '');",
+                                        callback = { state ->
+
+                                        }
+                                    )
+                                }
+
                             }
                         }, onDispose = {
 
                         },
-                        webViewJsBridge = null
                     )
                 }
 

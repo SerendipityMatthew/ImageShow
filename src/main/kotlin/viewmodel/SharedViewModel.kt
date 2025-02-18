@@ -9,11 +9,13 @@ import image.ImageGPSInfo
 import image.ImageMeta
 import image.ImageSizeInfo
 import image.LensInfo
+import image.ThumbnailImageInfo
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import org.koin.core.component.KoinComponent
+import utils.Utils
 import java.io.File
 
 const val IMAGE_FILE_PATH = "/Users/matthew/Downloads/github/Matthew/ImageShow/"
@@ -86,6 +88,9 @@ class SharedViewModel() : KoinComponent, ViewModel() {
                                 name = photoMetadata.lensName ?: "",
                                 lensMake = photoMetadata.lensMake,
                                 lensModel = photoMetadata.lensModel,
+                            ),
+                            thumbnailImageInfo = ThumbnailImageInfo(
+                                thumbnailBase64 = Utils.thumbnailToBase64(Utils.createThumbnail(f.path, 50, 50))
                             )
                         )
 

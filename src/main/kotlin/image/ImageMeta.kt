@@ -1,5 +1,8 @@
 package image
 
+import com.ashampoo.kim.model.ImageSize
+import utils.Utils.toBase64
+
 data class ImageMeta(
     val filePath: String,
     val imageFileName: String,
@@ -8,6 +11,7 @@ data class ImageMeta(
     val imageSizeInfo: ImageSizeInfo? = null,
     val imageFocalInfo: ImageFocalInfo? = null,
     val imageGPSInfo: ImageGPSInfo? = null,
+    val thumbnailImageInfo: ThumbnailImageInfo? = null
 )
 
 data class ImageFocalInfo(
@@ -36,3 +40,12 @@ data class ImageGPSInfo(
     val latitude: Double? = null,
     val longitude: Double? = null,
 )
+
+data class ThumbnailImageInfo(
+    val thumbnailImageSize: ImageSizeInfo? = null,
+    val thumbnailBytes: ByteArray? = null,
+    val thumbnailBase64: String? = null,
+
+) {
+
+}
