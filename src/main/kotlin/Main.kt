@@ -20,6 +20,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -32,6 +33,7 @@ import androidx.compose.ui.zIndex
 import androidx.lifecycle.viewmodel.compose.viewModel
 import coil3.compose.AsyncImage
 import com.multiplatform.webview.web.WebView
+import com.multiplatform.webview.web.rememberWebViewNavigator
 import com.multiplatform.webview.web.rememberWebViewState
 import compose.basecomponent.AllRoundedCornerShape16
 import compose.basecomponent.AllRoundedCornerShape8
@@ -46,6 +48,8 @@ import dev.chrisbanes.haze.HazeTint
 import dev.chrisbanes.haze.hazeEffect
 import dev.datlag.kcef.KCEF
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.koin.core.KoinApplication
 import viewmodel.SharedViewModel
@@ -64,10 +68,15 @@ fun App(isShowWebview: MutableState<Boolean>) {
         blurRadius = 8.dp,
         noiseFactor = HazeDefaults.noiseFactor,
     )
-    val longitude = 35.8195489
-    val latitude = 139.6744804
+    val latitude = 35.8155031
+    val longitude = 139.7097407
     val googleMapUrl = "https://www.google.com/maps/@$longitude,$latitude,14z"
 
+    val htmlPath = File("src/main/resources/index.html").toURI().toString()
+    val state = rememberWebViewState(url = htmlPath)
+    state.webSettings.isJavaScriptEnabled = true
+    val webViewNavigator = rememberWebViewNavigator()
+    val coroutineScope = rememberCoroutineScope()
     MaterialTheme {
         val imageInfoModifier = Modifier
             .padding(TopEndPaddingValues8)
@@ -91,13 +100,28 @@ fun App(isShowWebview: MutableState<Boolean>) {
             contentPadding = PaddingValues16,
         ) {
             item {
-                val state = rememberWebViewState(url = googleMapUrl)
-                if (isShowWebview.value){
+
+                if (isShowWebview.value) {
                     WebView(
                         state = state,
                         modifier =
                         Modifier
                             .width(800.dp).height(600.dp),
+                        navigator = webViewNavigator,
+                        onCreated = {
+
+                            coroutineScope.launch {
+                                delay(5000)
+                                webViewNavigator.evaluateJavaScript(
+                                    script = "addMarker($latitude,$longitude, 'New York');",
+                                    callback = { state ->
+                                        println("WebView WebView WebView state $state")
+                                    })
+                            }
+                        }, onDispose = {
+
+                        },
+                        webViewJsBridge = null
                     )
                 }
 
@@ -205,5 +229,4 @@ fun main() = application {
         }
     }
 }
-
 

@@ -49,6 +49,7 @@ dependencies {
     api("io.github.kevinnzou:compose-webview-multiplatform:1.8.4")
 
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-swing:1.8.0")
+    implementation("org.jetbrains.compose.web:web-core:1.7.3")
 
 }
 
