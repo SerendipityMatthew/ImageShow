@@ -51,6 +51,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import kotlinx.serialization.json.Json
 import org.koin.core.KoinApplication
 import viewmodel.SharedViewModel
 import java.io.File
@@ -102,30 +103,32 @@ fun App(isShowWebview: MutableState<Boolean>) {
                     WebView(
                         state = state,
                         modifier =
-                        Modifier
-                            .width(800.dp)
-                            .height(600.dp),
+                            Modifier
+                                .width(800.dp)
+                                .height(600.dp),
                         navigator = webViewNavigator,
                         onCreated = {
                             println("imageMeta.thumbnailImageInfo?.thumbnailBase64 imageList.size = ${imageList.size}")
 
                             coroutineScope.launch {
                                 delay(5000)
+                                val imageMapMarkerInfoList = imageList.map {
+                                    it.imageMapMarkerInfo
+                                }.toMutableList().filter {
+                                    it.longitude != 0.0 && it.latitude != 0.0
+                                }.toTypedArray()
 
-                                imageList.take(1).forEachIndexed { _, imageMeta ->
-                                    if (imageMeta.imageGPSInfo?.latitude == null || imageMeta.imageGPSInfo.longitude == null) {
-                                        return@forEachIndexed
+                                val markersJson = Json.encodeToString(imageMapMarkerInfoList)
+                                webViewNavigator.evaluateJavaScript(
+                                    script = "addMarkers('$markersJson')",
+                                    callback = { state ->
+
                                     }
-                                    webViewNavigator.evaluateJavaScript(
-                                        script = "addMarker(${imageMeta.imageGPSInfo.latitude},${imageMeta.imageGPSInfo.longitude}, '湯沢岩石原スキー', '');",
-                                        callback = { state ->
-
-                                        }
-                                    )
-                                }
+                                )
 
                             }
-                        }, onDispose = {
+                        },
+                        onDispose = {
 
                         },
                     )
@@ -207,11 +210,6 @@ fun main() = application {
                     }
                     onInitialized {
                         isShowWebview.value = true
-                    }
-                }
-                download {
-                    github {
-                        release("jbr-release-17.0.12b1207.37")
                     }
                 }
 

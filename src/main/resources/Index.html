@@ -6,44 +6,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Google Map</title>
     <script src="https://maps.googleapis.com/maps/api/js?key=YOUR_API_KEY"></script>
-    <script>
-        let map;
-        function initMap() {
-            map = new google.maps.Map(document.getElementById('map'), {
-                center: { lat: 35.8195489, lng: 139.6744804 },
-                zoom: 12
-            });
+    <script src="image_marker.js"></script>
 
-            // 默认添加一个 Marker
-            new google.maps.Marker({
-                position: { lat: 35.8195489, lng: 139.6744804 },
-                map: map,
-                title: "Warabi"
-            });
-        }
-
-        // JavaScript 方法，用于从 Compose 端接收坐标并添加 Marker
-        function addMarker(latitude, longitude, locationName, iconBase64) {
-            var position = { lat: latitude, lng: longitude};
-            console.log('Adding marker at position: latitude = ', latitude, 'longitude =', longitude,'locationName =', locationName, 'iconBase64 =', iconBase64);
-
-            let icon = null;
-            if (iconBase64 && iconBase64.trim() !== "") {
-                icon = {
-                    url: 'data:image/png;base64,' + iconBase64,
-                    scaledSize: new google.maps.Size(50, 50) // 调整图标大小
-                };
-            }
-
-            new google.maps.Marker({
-                position: position,
-                map: map,
-                title: locationName,
-                icon: icon
-            });
-            map.setCenter(position);
-        }
-    </script>
 </head>
 
 <body onload="initMap()">

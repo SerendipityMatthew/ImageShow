@@ -4,12 +4,7 @@ import androidx.lifecycle.ViewModel
 import com.ashampoo.kim.Kim
 import com.ashampoo.kim.common.convertToPhotoMetadata
 import extension.isImageFile
-import image.CameraBodyInfo
-import image.ImageGPSInfo
-import image.ImageMeta
-import image.ImageSizeInfo
-import image.LensInfo
-import image.ThumbnailImageInfo
+import image.*
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -18,7 +13,7 @@ import org.koin.core.component.KoinComponent
 import utils.Utils
 import java.io.File
 
-const val IMAGE_FILE_PATH = "/Users/matthew/Downloads/github/Matthew/ImageShow/"
+const val IMAGE_FILE_PATH = "images"
 
 class SharedViewModel() : KoinComponent, ViewModel() {
     private val _imageMetaList = MutableStateFlow<List<ImageMeta>>(listOf())
@@ -40,7 +35,6 @@ class SharedViewModel() : KoinComponent, ViewModel() {
         }
     }
 
-    @OptIn(DelicateCoroutinesApi::class)
     fun readImages() {
         viewModelScope.launch {
             val list = readImages(IMAGE_FILE_PATH)
@@ -91,7 +85,8 @@ class SharedViewModel() : KoinComponent, ViewModel() {
                             ),
                             thumbnailImageInfo = ThumbnailImageInfo(
                                 thumbnailBase64 = Utils.thumbnailToBase64(Utils.createThumbnail(f.path, 50, 50))
-                            )
+                            ),
+
                         )
 
                     } else {

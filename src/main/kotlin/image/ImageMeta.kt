@@ -1,7 +1,6 @@
 package image
 
-import com.ashampoo.kim.model.ImageSize
-import utils.Utils.toBase64
+import kotlinx.serialization.Serializable
 
 data class ImageMeta(
     val filePath: String,
@@ -11,8 +10,18 @@ data class ImageMeta(
     val imageSizeInfo: ImageSizeInfo? = null,
     val imageFocalInfo: ImageFocalInfo? = null,
     val imageGPSInfo: ImageGPSInfo? = null,
-    val thumbnailImageInfo: ThumbnailImageInfo? = null
-)
+    val thumbnailImageInfo: ThumbnailImageInfo? = null,
+) {
+    val imageMapMarkerInfo: ImageMapMarkerInfo
+        get() {
+            return ImageMapMarkerInfo(
+                imageName = imageFileName,
+                latitude = imageGPSInfo?.latitude ?: 0.0,
+                longitude = imageGPSInfo?.longitude ?: 0.0,
+                iconBase64 = thumbnailImageInfo?.thumbnailBase64 ?: ""
+            )
+        }
+}
 
 data class ImageFocalInfo(
     val focalLength: Double? = null,
@@ -46,6 +55,14 @@ data class ThumbnailImageInfo(
     val thumbnailBytes: ByteArray? = null,
     val thumbnailBase64: String? = null,
 
-) {
+    ) {
 
 }
+
+@Serializable
+data class ImageMapMarkerInfo(
+    val imageName: String,
+    val latitude: Double,
+    val longitude: Double,
+    val iconBase64: String? = null
+)
