@@ -184,6 +184,7 @@ fun App(isShowWebview: MutableState<Boolean>) {
 
                         }
                     }
+                    println("image.filePath image.filePath image.filePath ${image.filePath}")
                     AsyncImage(
                         model = image.filePath,
                         modifier = asyncImageModifier,

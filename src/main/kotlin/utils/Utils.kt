@@ -7,6 +7,9 @@ import java.awt.image.BufferedImage
 import java.io.ByteArrayOutputStream
 import javax.imageio.ImageIO
 
+import java.io.FileOutputStream
+import java.io.IOException
+
 object Utils {
     fun encodeImageToBase64(imagePath: String): String {
         val file = File(imagePath)
@@ -37,6 +40,23 @@ object Utils {
         val base64 = Base64.getEncoder().encodeToString(bytes)
         return base64
     }
+
+
+    fun createThumbnailFileAndSave(imagePath: String, thumbnailPath: String, width: Int, height: Int):String {
+        // 读取原始图片
+        val originalImage: BufferedImage = ImageIO.read(File(imagePath))
+
+        // 创建缩略图
+        val thumbnailImage = BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB)
+        val g = thumbnailImage.createGraphics()
+        g.drawImage(originalImage.getScaledInstance(width, height, Image.SCALE_SMOOTH), 0, 0, null)
+        g.dispose()
+
+        // 保存缩略图到本地
+        ImageIO.write(thumbnailImage, "png", File(thumbnailPath))
+        return thumbnailPath
+    }
+
 
     fun ByteArray.toBase64(): String {
         return Base64.getEncoder().encodeToString(this)

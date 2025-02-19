@@ -60,12 +60,12 @@ class SharedViewModel() : KoinComponent, ViewModel() {
                 .filter {
                     it.isImageFile()
                 }
-                .map { f ->
-                    val photoMetadata = Kim.readMetadata(f.readBytes())?.convertToPhotoMetadata()
+                .map { imageFile ->
+                    val photoMetadata = Kim.readMetadata(imageFile.readBytes())?.convertToPhotoMetadata()
                     if (photoMetadata != null) {
                         ImageMeta(
-                            filePath = f.path,
-                            imageFileName = f.name,
+                            filePath = imageFile.path,
+                            imageFileName = imageFile.name,
                             imageGPSInfo = ImageGPSInfo(
                                 latitude = photoMetadata.gpsCoordinates?.latitude,
                                 longitude = photoMetadata.gpsCoordinates?.longitude
@@ -84,15 +84,20 @@ class SharedViewModel() : KoinComponent, ViewModel() {
                                 lensModel = photoMetadata.lensModel,
                             ),
                             thumbnailImageInfo = ThumbnailImageInfo(
-                                thumbnailBase64 = Utils.thumbnailToBase64(Utils.createThumbnail(f.path, 50, 50))
+                                thumbnailFilePath = "../../../" + Utils.createThumbnailFileAndSave(
+                                    imageFile.path,
+                                    "images/thumbnail/${imageFile.name}",
+                                    100,
+                                    100
+                                )
                             ),
 
-                        )
+                            )
 
                     } else {
                         ImageMeta(
-                            filePath = f.path,
-                            imageFileName = f.name,
+                            filePath = imageFile.path,
+                            imageFileName = imageFile.name,
                         )
                     }
 

@@ -18,7 +18,7 @@ data class ImageMeta(
                 imageName = imageFileName,
                 latitude = imageGPSInfo?.latitude ?: 0.0,
                 longitude = imageGPSInfo?.longitude ?: 0.0,
-                iconBase64 = thumbnailImageInfo?.thumbnailBase64 ?: ""
+                imageUrl = thumbnailImageInfo?.thumbnailFilePath ?: ""
             )
         }
 }
@@ -54,6 +54,7 @@ data class ThumbnailImageInfo(
     val thumbnailImageSize: ImageSizeInfo? = null,
     val thumbnailBytes: ByteArray? = null,
     val thumbnailBase64: String? = null,
+    val thumbnailFilePath: String? = null,
 
     ) {
 
@@ -64,5 +65,5 @@ data class ImageMapMarkerInfo(
     val imageName: String,
     val latitude: Double,
     val longitude: Double,
-    val iconBase64: String? = null
+    val imageUrl: String? = null
 )
