@@ -1,14 +1,13 @@
 package utils
 
-import java.io.File
-import java.util.Base64
 import java.awt.Image
 import java.awt.image.BufferedImage
 import java.io.ByteArrayOutputStream
+import java.io.File
+import java.util.Base64
 import javax.imageio.ImageIO
+import javax.swing.SwingUtilities
 
-import java.io.FileOutputStream
-import java.io.IOException
 
 object Utils {
     fun encodeImageToBase64(imagePath: String): String {
@@ -42,7 +41,12 @@ object Utils {
     }
 
 
-    fun createThumbnailFileAndSave(imagePath: String, thumbnailPath: String, width: Int, height: Int):String {
+    fun createThumbnailFileAndSave(
+        imagePath: String,
+        thumbnailPath: String,
+        width: Int,
+        height: Int
+    ): String {
         // 读取原始图片
         val originalImage: BufferedImage = ImageIO.read(File(imagePath))
 
@@ -61,5 +65,29 @@ object Utils {
     fun ByteArray.toBase64(): String {
         return Base64.getEncoder().encodeToString(this)
     }
+
+
+    internal fun <T> runOnUiThread(block: () -> T): T {
+        if (SwingUtilities.isEventDispatchThread()) {
+            return block()
+        }
+
+        var error: Throwable? = null
+        var result: T? = null
+
+        SwingUtilities.invokeAndWait {
+            try {
+                result = block()
+            } catch (e: Throwable) {
+                error = e
+            }
+        }
+
+        error?.also { throw it }
+
+        @Suppress("UNCHECKED_CAST")
+        return result as T
+    }
+
 
 }

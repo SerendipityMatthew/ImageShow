@@ -60,6 +60,9 @@ class SharedViewModel() : KoinComponent, ViewModel() {
                 .filter {
                     it.isImageFile()
                 }
+                .filter {
+                    !it.path.contains("thumbnail")
+                }
                 .map { imageFile ->
                     val photoMetadata = Kim.readMetadata(imageFile.readBytes())?.convertToPhotoMetadata()
                     if (photoMetadata != null) {

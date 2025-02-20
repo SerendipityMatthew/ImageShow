@@ -7,6 +7,7 @@ plugins {
     id("org.jetbrains.compose")
     id("org.jetbrains.kotlin.plugin.compose")
     kotlin("plugin.serialization") version "2.1.0"
+    id("com.google.devtools.ksp") version "2.1.10-1.0.30" // Depends on your kotlin version
 
 }
 
@@ -24,9 +25,6 @@ repositories {
 kotlin {
     jvmToolchain {
         languageVersion.set(JavaLanguageVersion.of(17))
-    }
-    sourceSets {
-
     }
 
 }
@@ -57,6 +55,10 @@ dependencies {
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-swing:1.8.0")
     implementation("org.jetbrains.compose.web:web-core:1.7.3")
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.8.0")
+    implementation("com.arkivanov.decompose:decompose:3.2.2")
+    implementation("com.arkivanov.decompose:extensions-compose:3.2.2")
+    implementation("com.arkivanov.essenty:lifecycle-jvm:2.4.0")
+
 
 }
 
