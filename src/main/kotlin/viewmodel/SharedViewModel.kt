@@ -1,8 +1,10 @@
 package viewmodel
 
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import com.ashampoo.kim.Kim
 import com.ashampoo.kim.common.convertToPhotoMetadata
+import dev.datlag.kcef.KCEF
 import extension.isImageFile
 import image.*
 import kotlinx.coroutines.*
@@ -25,6 +27,26 @@ class SharedViewModel() : KoinComponent, ViewModel() {
 
     init {
         readImages()
+        initKcef()
+    }
+
+    private fun initKcef() {
+        viewModelScope.launch(ioDispatcher) {
+            KCEF.init(builder = {
+                installDir(File("kcef-bundle"))
+                progress {
+                    onDownloading {}
+                    onInitialized {
+                    }
+                }
+
+                settings {
+                    cachePath = File("cache").absolutePath
+                }
+            }, onError = {
+                it?.printStackTrace()
+            }, onRestartRequired = {})
+        }
     }
 
     fun refreshImages() {
