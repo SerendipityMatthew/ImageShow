@@ -1,6 +1,5 @@
 package ui.screen
 
-import ImageMapComponent
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
@@ -14,6 +13,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.multiplatform.webview.web.WebView
 import com.multiplatform.webview.web.rememberWebViewNavigator
 import com.multiplatform.webview.web.rememberWebViewState
+import component.ImageMapComponent
 import viewmodel.ImageMapViewModel
 import java.io.File
 

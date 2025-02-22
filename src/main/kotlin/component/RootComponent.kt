@@ -1,3 +1,5 @@
+package component
+
 import com.arkivanov.decompose.ComponentContext
 import com.arkivanov.decompose.DelicateDecomposeApi
 import com.arkivanov.decompose.router.stack.ChildStack
@@ -7,6 +9,7 @@ import com.arkivanov.decompose.router.stack.pop
 import com.arkivanov.decompose.router.stack.popTo
 import com.arkivanov.decompose.router.stack.push
 import com.arkivanov.decompose.value.Value
+import image.ImageMeta
 import kotlinx.serialization.Serializable
 
 interface RootComponent {
@@ -16,6 +19,7 @@ interface RootComponent {
     sealed class Child {
         class ImageMap(val component: ImageMapComponent) : Child()
         class Main(val component: MainComponent) : Child()
+        class SingleImage(val component: SingleImageComponent) : Child()
     }
 }
 
@@ -46,7 +50,14 @@ class DefaultRootComponent(
                 )
             )
 
-            is Config.MainConfig -> RootComponent.Child.Main(mainComponent(childComponentContext))
+            is Config.MainConfig -> RootComponent.Child.Main(mainComponent(childComponentContext, config = config))
+
+            is Config.SingleImageConfig -> RootComponent.Child.SingleImage(
+                singleImageComponent(
+                    childComponentContext,
+                    config
+                )
+            )
         }
 
     private fun imageMapComponent(componentContext: ComponentContext): ImageMapComponent =
@@ -56,10 +67,22 @@ class DefaultRootComponent(
         )
 
     @OptIn(DelicateDecomposeApi::class)
-    private fun mainComponent(componentContext: ComponentContext): MainComponent =
+    private fun mainComponent(componentContext: ComponentContext, config: Config.MainConfig): MainComponent =
         DefaultMainComponent(
             componentContext = componentContext,
             onShowImageGPS = { navigation.push(Config.ImageMapConfig) },
+            onShowSingleImageClick = { navigation.push(Config.SingleImageConfig(imageMeta = it)) },
+        )
+
+    @OptIn(DelicateDecomposeApi::class)
+    private fun singleImageComponent(
+        componentContext: ComponentContext,
+        config: Config.SingleImageConfig
+    ): SingleImageComponent =
+        DefaultSingleImageComponent(
+            componentContext = componentContext,
+            imageMeta = config.imageMeta,
+            onBackClick = { navigation.pop() },
         )
 
 
@@ -68,43 +91,22 @@ class DefaultRootComponent(
     }
 
     @Serializable
-    private sealed interface Config {
+    private sealed class Config {
         @Serializable
-        data object ImageMapConfig : Config
+        data object ImageMapConfig : Config()
 
         @Serializable
-        data object MainConfig : Config
+        data object MainConfig : Config()
+
+        @Serializable
+        data class SingleImageConfig(val imageMeta: ImageMeta) : Config()
     }
 }
 
 
-interface ImageMapComponent {
-    fun onShowMainScreenClicked()
-}
-
-interface MainComponent {
-    fun onShowImageGPSScreenClicked()
-}
 
 
-class DefaultImageMapComponent(
-    componentContext: ComponentContext,
-    private val onShowMainScreen: () -> Unit,
-) : ImageMapComponent, ComponentContext by componentContext {
 
-    override fun onShowMainScreenClicked() {
-        onShowMainScreen()
-    }
-}
 
-class DefaultMainComponent(
-    componentContext: ComponentContext,
-    private val onShowImageGPS: () -> Unit,
-) : MainComponent, ComponentContext by componentContext {
-
-    override fun onShowImageGPSScreenClicked() {
-        onShowImageGPS()
-    }
-}
 
 

@@ -17,6 +17,8 @@ import java.io.File
 const val IMAGE_FILE_PATH = "images"
 
 class SharedViewModel() : KoinComponent, ViewModel() {
+    private val allImageMetaList = MutableStateFlow<List<ImageMeta>>(listOf())
+
     private val _imageMetaList = MutableStateFlow<List<ImageMeta>>(listOf())
     val imageList: StateFlow<List<ImageMeta>> = _imageMetaList.asStateFlow()
 
@@ -27,6 +29,27 @@ class SharedViewModel() : KoinComponent, ViewModel() {
     init {
         readImages()
         initKcef()
+    }
+
+    fun isContainGPS(isContained: Boolean) {
+        viewModelScope.launch(ioDispatcher) {
+            val noGpsList = allImageMetaList.value.filter {
+                println("processImageMapMarkerInfo it.imageGPSInfo ${it.imageGPSInfo}")
+                if (isContained) {
+                    it.imageGPSInfo != null
+                            && it.imageGPSInfo.latitude != 0.0
+                            && it.imageGPSInfo.longitude != 0.0
+                            && it.imageGPSInfo.longitude != null
+                            && it.imageGPSInfo.latitude != null
+                } else {
+                    true
+                }
+
+            }.sortedBy {
+                it.imageFileName
+            }.toMutableList()
+            _imageMetaList.value = noGpsList
+        }
     }
 
     private fun initKcef() {
@@ -51,6 +74,7 @@ class SharedViewModel() : KoinComponent, ViewModel() {
         viewModelScope.launch {
             delay(1000)
             _imageMetaList.emit(emptyList())
+            allImageMetaList.emit(emptyList())
             readImages()
         }
     }
@@ -59,13 +83,13 @@ class SharedViewModel() : KoinComponent, ViewModel() {
         viewModelScope.launch {
             val list = readImages(IMAGE_FILE_PATH)
             _imageMetaList.emit(list)
+            allImageMetaList.emit(list)
             processImageMapMarkerInfo(list)
         }
     }
 
     private suspend fun processImageMapMarkerInfo(metaList: List<ImageMeta>) {
         val mapMarkerInfo = metaList.filter {
-            println("processImageMapMarkerInfo it.imageGPSInfo ${it.imageGPSInfo}")
             it.imageGPSInfo != null
                     && it.imageGPSInfo.latitude != 0.0
                     && it.imageGPSInfo.longitude != 0.0
@@ -92,6 +116,10 @@ class SharedViewModel() : KoinComponent, ViewModel() {
         val metaListList = deferredImageMetaTask.awaitAll()
         metaListList.flatten().toMutableList().sortedBy {
             it.imageFileName
+        }.mapIndexed { index, meta ->
+            meta.apply {
+                this.index = index
+            }
         }
     }
 

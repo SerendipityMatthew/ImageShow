@@ -2,6 +2,7 @@ package image
 
 import kotlinx.serialization.Serializable
 
+@Serializable
 data class ImageMeta(
     val filePath: String,
     val imageFileName: String,
@@ -21,35 +22,42 @@ data class ImageMeta(
                 imageUrl = thumbnailImageInfo?.thumbnailFilePath ?: ""
             )
         }
+    var index: Int = 0
 }
 
+@Serializable
 data class ImageFocalInfo(
     val focalLength: Double? = null,
     val exposureTime: Double? = null,
     val iso: Int? = null,
 )
 
+@Serializable
 data class ImageSizeInfo(
     val widthInPx: Int? = null,
     val heightInPx: Int? = null,
 )
 
+@Serializable
 data class LensInfo(
     val name: String,
     val lensMake: String? = null,
     val lensModel: String? = null,
 )
 
+@Serializable
 data class CameraBodyInfo(
     val cameraMake: String? = null,
     val cameraModel: String? = null,
 )
 
+@Serializable
 data class ImageGPSInfo(
     val latitude: Double? = null,
     val longitude: Double? = null,
 )
 
+@Serializable
 data class ThumbnailImageInfo(
     val thumbnailImageSize: ImageSizeInfo? = null,
     val thumbnailBytes: ByteArray? = null,

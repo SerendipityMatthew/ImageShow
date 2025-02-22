@@ -3,6 +3,8 @@ import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.application
 import com.arkivanov.decompose.DefaultComponentContext
 import com.arkivanov.essenty.lifecycle.LifecycleRegistry
+import component.DefaultRootComponent
+import component.RootContent
 import dev.datlag.kcef.KCEF
 import org.koin.core.KoinApplication
 import utils.Utils.runOnUiThread
