@@ -1,5 +1,6 @@
 enum class ImageFileExtension(val extension: String) {
-    JPEG("jpg"),
+    JPEG("jpeg"),
+    JPG("jpg"),
     PNG("png"),
     GIF("gif"),
     WEBP("webp"),

@@ -1,7 +1,6 @@
 package viewmodel
 
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
 import com.ashampoo.kim.Kim
 import com.ashampoo.kim.common.convertToPhotoMetadata
 import dev.datlag.kcef.KCEF
@@ -36,8 +35,7 @@ class SharedViewModel() : KoinComponent, ViewModel() {
                 installDir(File("kcef-bundle"))
                 progress {
                     onDownloading {}
-                    onInitialized {
-                    }
+                    onInitialized {}
                 }
 
                 settings {
@@ -61,76 +59,92 @@ class SharedViewModel() : KoinComponent, ViewModel() {
         viewModelScope.launch {
             val list = readImages(IMAGE_FILE_PATH)
             _imageMetaList.emit(list)
+            processImageMapMarkerInfo(list)
         }
     }
 
-    suspend fun readImages(path: String): List<ImageMeta> {
+    private suspend fun processImageMapMarkerInfo(metaList: List<ImageMeta>) {
+        val mapMarkerInfo = metaList.filter {
+            it.imageGPSInfo != null && it.imageGPSInfo.latitude != 0.0 && it.imageGPSInfo.longitude != 0.0
+        }.map {
+            it.imageMapMarkerInfo
+        }.toMutableList()
+        Utils.imageGpsInfoFlow.emit(mapMarkerInfo)
+    }
+
+    private suspend fun readImages(path: String): List<ImageMeta> = coroutineScope {
+        val imageList = readImageFiles(path)
+        val imageFileListList = imageList.chunked(50)
+        val deferredImageMetaTask = imageFileListList.mapIndexed { index, fileList ->
+            async {
+                readImageMeta(index, fileList)
+            }
+        }.toMutableList()
+        val metaListList = deferredImageMetaTask.awaitAll()
+        metaListList.flatten().toMutableList()
+    }
+
+    private suspend fun readImageMeta(processIndex: Int, fileList: List<File>): List<ImageMeta> {
+        println("readImageMeta processIndex $processIndex, fileList = ${fileList.size}")
+        val imageFileList = fileList.map { imageFile ->
+            val photoMetadata = Kim.readMetadata(imageFile.readBytes())?.convertToPhotoMetadata()
+                ?: return mutableListOf()
+            ImageMeta(
+                filePath = imageFile.path,
+                imageFileName = imageFile.name,
+                imageGPSInfo = ImageGPSInfo(
+                    latitude = photoMetadata.gpsCoordinates?.latitude,
+                    longitude = photoMetadata.gpsCoordinates?.longitude
+                ),
+                imageSizeInfo = ImageSizeInfo(
+                    widthInPx = photoMetadata.widthPx,
+                    heightInPx = photoMetadata.heightPx,
+                ),
+                cameraBodyInfo = CameraBodyInfo(
+                    cameraMake = photoMetadata.cameraMake,
+                    cameraModel = photoMetadata.cameraModel,
+                ),
+                lensInfo = LensInfo(
+                    name = photoMetadata.lensName ?: "",
+                    lensMake = photoMetadata.lensMake,
+                    lensModel = photoMetadata.lensModel,
+                ),
+                thumbnailImageInfo = ThumbnailImageInfo(
+                    thumbnailFilePath = "../../../" + Utils.createThumbnailFileAndSave(
+                        imageFile.path, "images/thumbnail/thumbnail-${imageFile.name}", 64, 64
+                    )
+                ),
+            )
+        }.toMutableList()
+
+        return imageFileList
+    }
+
+
+    suspend fun readImageFiles(path: String): List<File> {
         val file = File(path)
 
         val imageList = if (file.isFile) {
             if (file.isImageFile()) {
-                val imageMeta = ImageMeta(
-                    filePath = file.path,
-                    imageFileName = file.name,
-                )
-                listOf(imageMeta)
+                listOf(file)
             } else {
                 emptyList()
             }
         } else if (file.isDirectory) {
-            file.walk()
-                .filter {
-                    it.isImageFile()
-                }
-                .filter {
-                    !it.path.contains("thumbnail")
-                }
-                .map { imageFile ->
-                    val photoMetadata = Kim.readMetadata(imageFile.readBytes())?.convertToPhotoMetadata()
-                    if (photoMetadata != null) {
-                        ImageMeta(
-                            filePath = imageFile.path,
-                            imageFileName = imageFile.name,
-                            imageGPSInfo = ImageGPSInfo(
-                                latitude = photoMetadata.gpsCoordinates?.latitude,
-                                longitude = photoMetadata.gpsCoordinates?.longitude
-                            ),
-                            imageSizeInfo = ImageSizeInfo(
-                                widthInPx = photoMetadata.widthPx,
-                                heightInPx = photoMetadata.heightPx,
-                            ),
-                            cameraBodyInfo = CameraBodyInfo(
-                                cameraMake = photoMetadata.cameraMake,
-                                cameraModel = photoMetadata.cameraModel,
-                            ),
-                            lensInfo = LensInfo(
-                                name = photoMetadata.lensName ?: "",
-                                lensMake = photoMetadata.lensMake,
-                                lensModel = photoMetadata.lensModel,
-                            ),
-                            thumbnailImageInfo = ThumbnailImageInfo(
-                                thumbnailFilePath = "../../../" + Utils.createThumbnailFileAndSave(
-                                    imageFile.path,
-                                    "images/thumbnail/${imageFile.name}",
-                                    100,
-                                    100
-                                )
-                            ),
-
-                            )
-
-                    } else {
-                        ImageMeta(
-                            filePath = imageFile.path,
-                            imageFileName = imageFile.name,
-                        )
-                    }
-
-                }.toMutableList()
+            file.walk().filter {
+                it.isImageFile()
+            }.filter {
+                !it.path.contains(THUMBNAIL_DIRECTORY)
+            }.map {
+                it
+            }.toMutableList()
         } else {
             emptyList()
         }
         return imageList
     }
 
+    companion object {
+        const val THUMBNAIL_DIRECTORY = "thumbnail"
+    }
 }

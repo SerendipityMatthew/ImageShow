@@ -10,15 +10,17 @@ import androidx.compose.material.TopAppBar
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import com.multiplatform.webview.web.WebView
 import com.multiplatform.webview.web.rememberWebViewNavigator
 import com.multiplatform.webview.web.rememberWebViewState
-import image.ImageMapMarkerInfo
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.serialization.json.Json
+import utils.Utils
 import java.io.File
 
 @Composable
@@ -30,6 +32,9 @@ fun ImageMapScreen(
     state.webSettings.isJavaScriptEnabled = true
     val webViewNavigator = rememberWebViewNavigator()
     val coroutineScope = rememberCoroutineScope()
+
+    val imageMapMarkerInfoList by Utils.imageGpsInfoFlow.collectAsState()
+
     Scaffold(
         modifier = Modifier,
         topBar = {
@@ -54,7 +59,6 @@ fun ImageMapScreen(
                 .fillMaxSize(),
             navigator = webViewNavigator,
             onCreated = {
-                val imageMapMarkerInfoList = mutableListOf<ImageMapMarkerInfo>()
 
                 coroutineScope.launch {
                     delay(5000)

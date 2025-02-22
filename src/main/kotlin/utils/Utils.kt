@@ -1,5 +1,7 @@
 package utils
 
+import image.ImageMapMarkerInfo
+import kotlinx.coroutines.flow.MutableStateFlow
 import java.awt.Image
 import java.awt.image.BufferedImage
 import java.io.ByteArrayOutputStream
@@ -10,6 +12,7 @@ import javax.swing.SwingUtilities
 
 
 object Utils {
+    val imageGpsInfoFlow = MutableStateFlow(mutableListOf<ImageMapMarkerInfo>())
     fun encodeImageToBase64(imagePath: String): String {
         val file = File(imagePath)
         val bytes = file.readBytes()

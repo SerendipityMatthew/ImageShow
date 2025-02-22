@@ -81,7 +81,6 @@ fun MainScreen(
             item {
                 Button(
                     onClick = {
-                        sharedViewModel.refreshImages()
                         mainComponent.onShowImageGPSScreenClicked()
                     }
                 ) {

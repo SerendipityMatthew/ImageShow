@@ -13,6 +13,7 @@ fun File.isImageFile(): Boolean {
 
 val imageFileExtensionList = listOf(
     ImageFileExtension.JPEG.extension,
+    ImageFileExtension.JPG.extension,
     ImageFileExtension.PNG.extension,
     ImageFileExtension.GIF.extension,
     ImageFileExtension.WEBP.extension,
