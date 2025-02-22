@@ -1,26 +1,20 @@
 package ui.screen
 
 import ImageMapComponent
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.material.Icon
-import androidx.compose.material.IconButton
-import androidx.compose.material.Scaffold
-import androidx.compose.material.Text
-import androidx.compose.material.TopAppBar
+import androidx.compose.foundation.layout.*
+import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.multiplatform.webview.web.WebView
 import com.multiplatform.webview.web.rememberWebViewNavigator
 import com.multiplatform.webview.web.rememberWebViewState
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
-import kotlinx.serialization.json.Json
-import utils.Utils
+import viewmodel.ImageMapViewModel
 import java.io.File
 
 @Composable
@@ -31,10 +25,9 @@ fun ImageMapScreen(
     val state = rememberWebViewState(url = htmlPath)
     state.webSettings.isJavaScriptEnabled = true
     val webViewNavigator = rememberWebViewNavigator()
-    val coroutineScope = rememberCoroutineScope()
+    val imageMapViewModel: ImageMapViewModel = viewModel<ImageMapViewModel>()
 
-    val imageMapMarkerInfoList by Utils.imageGpsInfoFlow.collectAsState()
-
+    val markersJson by imageMapViewModel.imageGpsInfoGsonFlow.collectAsState()
     Scaffold(
         modifier = Modifier,
         topBar = {
@@ -50,6 +43,61 @@ fun ImageMapScreen(
                         )
                     }
                 },
+                actions = {
+                    Row(Modifier.wrapContentWidth()) {
+                        IconButton(
+                            onClick = {
+                                webViewNavigator.evaluateJavaScript(
+                                    script = "addMarkersAnimation('$markersJson')",
+                                    callback = { state ->
+
+                                    }
+                                )
+                            }) {
+                            Text(text = "Show with animation")
+                        }
+                        Spacer(Modifier.width(20.dp))
+                        IconButton(
+                            onClick = {
+                                webViewNavigator.evaluateJavaScript(
+                                    script = "addMarkers('$markersJson')",
+                                    callback = { state ->
+
+                                    }
+                                )
+                            }
+                        ) {
+                            Text(text = "Show No animation")
+                        }
+                        Spacer(Modifier.width(20.dp))
+                        IconButton(
+                            onClick = {
+                                webViewNavigator.evaluateJavaScript(
+                                    script = "clearMarkers()",
+                                    callback = { state ->
+
+                                    }
+                                )
+                            }
+                        ) {
+                            Text(text = "clean all marker")
+                        }
+                        Spacer(Modifier.width(20.dp))
+                        IconButton(
+                            onClick = {
+                                webViewNavigator.evaluateJavaScript(
+                                    script = "pauseMarkers()",
+                                    callback = { state ->
+
+                                    }
+                                )
+                            }
+                        ) {
+                            Text(text = "pause marking")
+                        }
+                    }
+
+                }
             )
         },
     ) {
@@ -60,18 +108,6 @@ fun ImageMapScreen(
             navigator = webViewNavigator,
             onCreated = {
 
-                coroutineScope.launch {
-                    delay(60_000)
-
-                    val markersJson = Json.encodeToString(imageMapMarkerInfoList)
-                    webViewNavigator.evaluateJavaScript(
-                        script = "addMarkersAnimation('$markersJson')",
-                        callback = { state ->
-
-                        }
-                    )
-
-                }
             },
             onDispose = {
 
