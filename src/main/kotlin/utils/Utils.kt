@@ -12,6 +12,7 @@ import javax.swing.SwingUtilities
 
 
 object Utils {
+    // should sort the data by date
     val imageGpsInfoFlow = MutableStateFlow(mutableListOf<ImageMapMarkerInfo>())
     fun encodeImageToBase64(imagePath: String): String {
         val file = File(imagePath)
@@ -50,6 +51,9 @@ object Utils {
         width: Int,
         height: Int
     ): String {
+        if (File(thumbnailPath).exists()){
+            return thumbnailPath
+        }
         // 读取原始图片
         val originalImage: BufferedImage = ImageIO.read(File(imagePath))
 

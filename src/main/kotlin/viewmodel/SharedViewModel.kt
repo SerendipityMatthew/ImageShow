@@ -65,7 +65,14 @@ class SharedViewModel() : KoinComponent, ViewModel() {
 
     private suspend fun processImageMapMarkerInfo(metaList: List<ImageMeta>) {
         val mapMarkerInfo = metaList.filter {
-            it.imageGPSInfo != null && it.imageGPSInfo.latitude != 0.0 && it.imageGPSInfo.longitude != 0.0
+            println("processImageMapMarkerInfo it.imageGPSInfo ${it.imageGPSInfo}")
+            it.imageGPSInfo != null
+                    && it.imageGPSInfo.latitude != 0.0
+                    && it.imageGPSInfo.longitude != 0.0
+                    && it.imageGPSInfo.longitude != null
+                    && it.imageGPSInfo.latitude != null
+        }.sortedBy {
+            it.imageFileName
         }.map {
             it.imageMapMarkerInfo
         }.toMutableList()
@@ -74,6 +81,8 @@ class SharedViewModel() : KoinComponent, ViewModel() {
 
     private suspend fun readImages(path: String): List<ImageMeta> = coroutineScope {
         val imageList = readImageFiles(path)
+        println("readImageMeta processIndex imageList = ${imageList.size}")
+
         val imageFileListList = imageList.chunked(50)
         val deferredImageMetaTask = imageFileListList.mapIndexed { index, fileList ->
             async {
@@ -81,7 +90,9 @@ class SharedViewModel() : KoinComponent, ViewModel() {
             }
         }.toMutableList()
         val metaListList = deferredImageMetaTask.awaitAll()
-        metaListList.flatten().toMutableList()
+        metaListList.flatten().toMutableList().sortedBy {
+            it.imageFileName
+        }
     }
 
     private suspend fun readImageMeta(processIndex: Int, fileList: List<File>): List<ImageMeta> {

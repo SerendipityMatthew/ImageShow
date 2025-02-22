@@ -61,11 +61,11 @@ fun ImageMapScreen(
             onCreated = {
 
                 coroutineScope.launch {
-                    delay(5000)
+                    delay(60_000)
 
                     val markersJson = Json.encodeToString(imageMapMarkerInfoList)
                     webViewNavigator.evaluateJavaScript(
-                        script = "addMarkers('$markersJson')",
+                        script = "addMarkersAnimation('$markersJson')",
                         callback = { state ->
 
                         }

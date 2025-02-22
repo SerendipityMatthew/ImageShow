@@ -6,7 +6,7 @@ async function initMap() {
 
     map = new Map(document.getElementById('map'), {
         center: { lat: 35.8195489, lng: 139.6744804 },
-        zoom: 12,
+        zoom: 17,
         mapId: 'YOUR_MAP_ID'
     });
 }
@@ -90,17 +90,16 @@ function createMarkerElement(imageName, imageUrl, size = 16) {
     });
 }
 
-async function addMarker(latitude, longitude, imageName, imageUrl) {
+async function addMarkerAnimation(latitude, longitude, imageName, imageUrl, shouldCenter = false) {
     try {
         const position = { lat: latitude, lng: longitude };
-        console.log('Adding marker at position:', {
-            latitude,
-            longitude,
-            imageName,
-            imageUrl
-        });
+        console.log('Adding marker at position:', { latitude, longitude, imageName, imageUrl });
 
         const markerElement = await createMarkerElement(imageName, imageUrl);
+
+        // 初始状态（透明 & 上移）
+        markerElement.style.opacity = "0";
+        markerElement.style.transform = "translateY(-50px) scale(0.8)";
 
         const marker = new window.AdvancedMarkerElement({
             position,
@@ -109,20 +108,86 @@ async function addMarker(latitude, longitude, imageName, imageUrl) {
             content: markerElement
         });
 
-        // 添加点击效果
-        markerElement.addEventListener('mousedown', () => {
-            markerElement.style.transform = 'scale(0.95)';
+        // 仅在第一个标记时设置地图中心
+        if (shouldCenter) {
+            map.setCenter(position);
+        }
+
+        // 执行动画：从上掉落
+        setTimeout(() => {
+            markerElement.style.opacity = "1";
+            markerElement.style.transform = "translateY(0) scale(1)";
+        }, 100); // 100ms 后开始动画
+
+        return marker;
+    } catch (error) {
+        console.error('Error adding marker:', error);
+        return null;
+    }
+}
+
+
+async function addMarkersAnimation(locationsJson) {
+    try {
+        console.log('Received locations JSON:', locationsJson);
+        const locations = JSON.parse(locationsJson);
+        console.log('Parsed locations:', locations);
+
+        const markers = [];
+
+        for (let i = 0; i < locations.length; i++) {
+            setTimeout(async () => {
+                const shouldCenter = i === 0; // 只在第一个标记时居中
+                const marker = await addMarker(
+                    locations[i].latitude,
+                    locations[i].longitude,
+                    locations[i].imageName,
+                    locations[i].imageUrl,
+                    shouldCenter,
+                );
+
+                if (marker) {
+                    markers.push(marker);
+                }
+            }, i * 300); // 每个标记间隔 300ms
+        }
+
+        return markers;
+    } catch (error) {
+        console.error('Error adding markers:', error);
+        return [];
+    }
+}
+
+async function addMarker(latitude, longitude, imageName, imageUrl, shouldCenter = false) {
+    try {
+        const position = { lat: latitude, lng: longitude };
+        console.log('Adding marker at position:', { latitude, longitude, imageName, imageUrl });
+
+        const markerElement = await createMarkerElement(imageName, imageUrl);
+
+        // 初始状态（透明 & 上移）
+        markerElement.style.opacity = "0";
+        markerElement.style.transform = "translateY(-50px) scale(0.8)";
+
+        const marker = new window.AdvancedMarkerElement({
+            position,
+            map,
+            title: imageName,
+            content: markerElement
         });
 
-        markerElement.addEventListener('mouseup', () => {
-            markerElement.style.transform = 'scale(1)';
-        });
+        // 仅在第一个标记时设置地图中心
+        if (shouldCenter) {
+            map.setCenter(position);
+        }
 
-        markerElement.addEventListener('mouseleave', () => {
-            markerElement.style.transform = 'scale(1)';
-        });
+        // 让动画稍后执行
+        setTimeout(() => {
+            markerElement.style.opacity = "1";
+            markerElement.style.transform = "translateY(0) scale(1)";
+        }, 100); // 100ms 后开始动画
 
-        map.setCenter(position);
         return marker;
     } catch (error) {
         console.error('Error adding marker:', error);
@@ -138,7 +203,7 @@ async function addMarkers(locationsJson) {
 
         const markers = await Promise.all(
             locations.map(location =>
-                addMarker(
+                addMarkerAnimation(
                     location.latitude,
                     location.longitude,
                     location.imageName,
